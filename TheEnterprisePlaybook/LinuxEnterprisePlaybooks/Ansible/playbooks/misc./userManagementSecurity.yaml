@@ -1,0 +1,12 @@
+- name: Disable root SSH login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+  notify: Restart SSH
+
+- name: Install fail2ban for security
+  apt:
+    name: fail2ban
+    state: present
+    

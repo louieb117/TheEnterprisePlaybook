@@ -1,0 +1,27 @@
+- name: Configure Frontend Web Server with Podman
+  hosts: frontend
+  become: true
+  tasks:
+    - name: Update system packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install required packages
+      apt:
+        name:
+          - git
+          - podman
+          - podman-compose
+        state: present
+
+    - name: Clone frontend repo
+      git:
+        repo: "https://github.com/your-org/frontend-repo.git"
+        dest: "/opt/frontend"
+        version: "main"
+
+    - name: Deploy frontend with Podman Compose
+      command: podman-compose up -d
+      args:
+        chdir: /opt/frontend

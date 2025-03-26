@@ -1,0 +1,17 @@
+- name: Create users
+  user:
+    name: "{{ item.name }}"
+    state: present
+    groups: "{{ item.groups }}"
+    shell: "{{ item.shell }}"
+  loop:
+    - { name: 'devuser', groups: 'sudo', shell: '/bin/bash' }
+    # - { name: 'user2', groups: 'sudo', shell: '/bin/bash' }
+
+- name: Set authorized keys for users
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', item.key) }}"
+  loop:
+    - { name: 'devuser', key: '~/.ssh/id_rsa_devuser.pub' }
+    # - { name: 'user2', key: '/path/to/user2.pub' }

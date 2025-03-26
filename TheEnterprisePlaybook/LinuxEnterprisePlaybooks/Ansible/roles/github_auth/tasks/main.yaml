@@ -1,0 +1,41 @@
+- name: Check if deployment SSH key already exists
+  stat:
+    path: "~/.ssh/id_rsa_deploykey.pub"
+  register: ssh_key_deploykey
+
+- name: Generate deployment SSH key pair if it does not exist
+  command: ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa_deploykey -N ""
+  when: not ssh_key_deploykey.stat.exists
+
+- name: Read the public key
+  slurp:
+    src: "~/.ssh/id_rsa_deploykey.pub"
+  register: public_key
+  when: not ssh_key_deploykey.stat.exists
+
+- name: Add the SSH key to GitHub
+  uri:
+    url: "https://api.github.com/user/keys"
+    method: POST
+    headers:
+      Authorization: "token {{ github_token }}"
+      Content-Type: "application/json"
+    body: |
+      {
+        "title": "Ansible Deploy Key",
+        "key": "{{ public_key.content | b64decode }}"
+      }
+    body_format: json
+    status_code: 201
+  when: not ssh_key_deploykey.stat.exists
+
+- name: Configure SSH to use the new key for GitHub
+  lineinfile:
+    path: "~/.ssh/config"
+    state: present
+    create: yes
+    line: |
+      Host github.com
+        Hostname github.com
+        IdentityFile ~/.ssh/id_rsa_deploykey
+        User git

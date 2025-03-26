@@ -1,0 +1,52 @@
+- name: Update system packages
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Ensure common packages are installed
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - vim
+    - curl
+    - git
+    - podman
+    - podman-compose
+    - htop
+    - glances
+    - net-tools
+
+- name: Ensure timezone is set
+  timezone:
+    name: "UTC"
+
+- name: Ensure log rotation is configured
+  copy:
+    dest: /etc/logrotate.d/custom_logs
+    content: |
+      /var/log/*.log {
+          weekly
+          rotate 4
+          compress
+          missingok
+          notifempty
+      }
+
+# - name: Copy over public keys
+#   authorized_key:
+#     user: "{{ item.user }}"
+#     state: present
+#     key: "{{ lookup('file', item.pub_key) }}"
+#   loop:
+#     - { user: 'devuser', pub_key: '~/.ssh/id_rsa_devuser.pub' }
+
+# - name: Copy over private keys
+#   copy:
+#     src: "{{ item.src }}"
+#     dest: "{{ item.dest }}"
+#     owner: "{{ item.user }}"
+#     group: "{{ item.user }}"
+#     mode: '0600'
+#   loop:
+#     - { src: '~/.ssh/id_rsa_deploykey', dest: '/root/.ssh/id_rsa_deploykey', user: 'root' }

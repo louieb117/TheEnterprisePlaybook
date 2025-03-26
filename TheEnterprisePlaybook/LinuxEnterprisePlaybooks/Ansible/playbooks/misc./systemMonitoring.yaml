@@ -1,0 +1,8 @@
+- name: Install monitoring tools
+  apt:
+    name:
+      - htop
+      - glances
+      - net-tools
+      - ufw
+    state: present

@@ -1,0 +1,49 @@
+{
+  "ignition": {
+    "version": "3.5.0"
+  },
+  "passwd": {
+    "users": [
+      {
+        "name": "core",
+        "passwordHash": "$y$j9T$VzyM0F3U0qKdCJi.WnDTW.$hCJlELjvYNvOsdk5t9jmYMq1yqmEas6OPfi/9KW55//",
+        "sshAuthorizedKeys": [
+          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9WZotpln9nsGAr7rSKVEahbuHsGZYbUaGb3PxAblH0QxZ4eKbRphTtIq+TnaDxNa91oQe1I551T6bCmQYxhNdiATtlqHYflAOr7pXP9ydPQVruvVhbPWUFZ4mhNucDNb4QtQf01/n/LE4ZWjxomfZjCZV2yAUEgmzLXfgO8BavsMJ1qfIzx2v2rVhArw/UjnFXCXZvmHwmLtvMle4oQu+2iqYxMQPALvPQVXsVWa6LYViku0VmOVfba3p3hv4jdXyeRsiPi8XXuYOy+Hq7aYY7yf15y/kSN9fRdjmdxocYUMwuTug/whUElGujAupTHiVvO0bk9L07Y0Z4X4Jjs/H lbellov@bluefin"
+        ]
+      },
+      {
+        "groups": [
+          "sudo",
+          "wheel"
+        ],
+        "name": "devuser",
+        "passwordHash": "$y$j9T$meZYoCzcqfO7bMsuVRstg/$0HHR4tuZHQy4gUEwdq7/czW37OhHRYp41evbpoydWy2",
+        "sshAuthorizedKeys": [
+          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfFSTSOCZI/TlWI37fCgnW0odMgJAcpufkF0dw6pLYVlU6dM8eBe6pmbqZsgTwXeSq8BhNKVN8hC8nnCLA/4j3Si8Mhy+vjhbIFYBWrgiWjQ88UknxrnwLITf+e2KRSP+mcRHRkYvi/IGwWe8fVhOvt9otVLFAGQSKxu4o5NLzA0iXm3mL0zqUW86QqSpMgUJyN9R//ScVAxX8NCXHaoNm6XBzaLX+6oUzpdC8dnQTpP/n9rrcgiWzomyDj9sQfq85b3SqS5hE0o77KWtSwJKQqJ+ElBAri6G8MBWItlc/mi2m6Z8cmHd6RmYajDJvGC7qmc0iylyDxWIi954w9Ut lbellov@bluefin"
+        ]
+      }
+    ]
+  },
+  "storage": {
+    "directories": [
+      {
+        "path": "/etc/ucore-autorebase",
+        "mode": 492
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nDescription=uCore autorebase to unsigned OCI and reboot\nConditionPathExists=!/etc/ucore-autorebase/unverified\nConditionPathExists=!/etc/ucore-autorebase/signed\nAfter=network-online.target\nWants=network-online.target\n[Service]\nType=oneshot\nStandardOutput=journal+console\nExecStart=/usr/bin/rpm-ostree rebase --bypass-driver ostree-unverified-registry:ghcr.io/ublue-os/ucore:stable\nExecStart=/usr/bin/touch /etc/ucore-autorebase/unverified\nExecStart=/usr/bin/systemctl disable ucore-unsigned-autorebase.service\nExecStart=/usr/bin/systemctl reboot\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "ucore-unsigned-autorebase.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=uCore autorebase to signed OCI and reboot\nConditionPathExists=/etc/ucore-autorebase/unverified\nConditionPathExists=!/etc/ucore-autorebase/signed\nAfter=network-online.target\nWants=network-online.target\n[Service]\nType=oneshot\nStandardOutput=journal+console\nExecStart=/usr/bin/rpm-ostree rebase --bypass-driver ostree-image-signed:docker://ghcr.io/ublue-os/ucore:stable\nExecStart=/usr/bin/touch /etc/ucore-autorebase/signed\nExecStart=/usr/bin/systemctl disable ucore-signed-autorebase.service\nExecStart=/usr/bin/systemctl reboot\n[Install]\nWantedBy=multi-user.target",
+        "enabled": true,
+        "name": "ucore-signed-autorebase.service"
+      }
+    ]
+  }
+}

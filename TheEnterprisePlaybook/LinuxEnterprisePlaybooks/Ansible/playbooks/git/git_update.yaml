@@ -1,0 +1,21 @@
+- name: Refetch the main branch of the backend project
+  hosts: backend
+  become: yes
+  tasks:
+    - name: Check if deployment SSH key already exists
+      stat:
+        path: "~/.ssh/id_rsa_deploykey.pub"
+      register: ssh_key_deploykey
+
+    - name: Ensure the backend repo is cloned and up-to-date
+      git:
+        repo: "git@github.com:louieb117/API-Server.git"
+        dest: "/opt/backend"
+        version: "main"
+        key_file: "~/.ssh/id_rsa_deploykey"
+        update: yes
+
+    - name: Deploy backend with Podman Compose
+      command: podman-compose up -d
+      args:
+        chdir: /opt/backend

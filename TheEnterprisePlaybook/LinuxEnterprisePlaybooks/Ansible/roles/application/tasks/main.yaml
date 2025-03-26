@@ -1,0 +1,20 @@
+- name: Check if deployment SSH key already exists
+  stat:
+    path: "~/.ssh/id_rsa_deploykey.pub"
+  register: ssh_key_deploykey
+
+- name: Generate deployment SSH key pair if it does not exist
+  command: ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa_deploykey -N ""
+  when: not ssh_key_deploykey.stat.exists
+
+- name: Clone backend repo
+  git:
+    repo: "git@github.com:louieb117/API-Server.git"
+    dest: "/opt/backend"
+    version: "main"
+    key_file: "~/.ssh/id_rsa_deploykey"
+
+- name: Deploy backend with Podman Compose
+  command: podman-compose up -d
+  args:
+    chdir: /opt/backend

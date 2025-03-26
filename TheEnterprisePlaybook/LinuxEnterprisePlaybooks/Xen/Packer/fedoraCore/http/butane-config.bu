@@ -1,0 +1,7 @@
+variant: fcos
+version: 1.6.0
+passwd:
+  users:
+    - name: devuser
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfFSTSOCZI/TlWI37fCgnW0odMgJAcpufkF0dw6pLYVlU6dM8eBe6pmbqZsgTwXeSq8BhNKVN8hC8nnCLA/4j3Si8Mhy+vjhbIFYBWrgiWjQ88UknxrnwLITf+e2KRSP+mcRHRkYvi/IGwWe8fVhOvt9otVLFAGQSKxu4o5NLzA0iXm3mL0zqUW86QqSpMgUJyN9R//ScVAxX8NCXHaoNm6XBzaLX+6oUzpdC8dnQTpP/n9rrcgiWzomyDj9sQfq85b3SqS5hE0o77KWtSwJKQqJ+ElBAri6G8MBWItlc/mi2m6Z8cmHd6RmYajDJvGC7qmc0iylyDxWIi954w9Ut lbellov@bluefin

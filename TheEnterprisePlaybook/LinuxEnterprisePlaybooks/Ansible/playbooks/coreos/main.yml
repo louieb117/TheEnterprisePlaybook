@@ -1,0 +1,52 @@
+---
+- name: Setup Ansible Server on Fedora CoreOS and Copy Playbooks
+  hosts: ansible_server
+  become: yes
+  vars:
+    ansible_user: "ansible"  # Change as needed
+    playbook_source: "~/my_playbooks"  # Change to your local playbook path
+    playbook_dest: "/home/ansible/playbooks"  # Destination on Ansible server
+
+  tasks:
+    - name: Ensure necessary packages are installed
+      rpm_ostree_pkg:
+        name:
+          - ansible
+          - git  # Optional, if you need Git
+        state: present
+
+    - name: Ensure Ansible user exists
+      user:
+        name: "{{ ansible_user }}"
+        state: present
+        create_home: yes
+        shell: /bin/bash
+
+    - name: Copy SSH key for passwordless SSH (if needed)
+      authorized_key:
+        user: "{{ ansible_user }}"
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        state: present
+      when: ansible_user != "root"
+
+    - name: Copy Ansible playbooks to server
+      synchronize:
+        src: "{{ playbook_source }}/"
+        dest: "{{ playbook_dest }}/"
+        recursive: yes
+      delegate_to: localhost
+
+    - name: Set correct permissions on playbook directory
+      file:
+        path: "{{ playbook_dest }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Verify Ansible installation
+      command: ansible --version
+      register: ansible_version
+
+    - name: Show Ansible version
+      debug:
+        msg: "Ansible installed: {{ ansible_version.stdout }}"

@@ -1,0 +1,30 @@
+- name: Install fail2ban
+  apt:
+    name: fail2ban
+    state: present
+
+- name: Configure fail2ban
+  template:
+    src: fail2ban.j2
+    dest: /etc/fail2ban/jail.local
+  notify:
+    - Restart fail2ban
+
+- name: Ensure UFW is installed
+  apt:
+    name: ufw
+    state: present
+
+- name: Configure UFW
+  ufw:
+    rule: allow
+    name: 'OpenSSH'
+    port: '22'
+    proto: 'tcp'
+
+- name: Disable root SSH login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+  notify: Restart SSH

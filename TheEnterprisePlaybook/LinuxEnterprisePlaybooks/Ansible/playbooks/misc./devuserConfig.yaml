@@ -1,0 +1,12 @@
+- name: Create a new user for deployments
+  user:
+    name: devuser
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+
+- name: Set up SSH key authentication
+  authorized_key:
+    user: devuser
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa_devuser.pub') }}"

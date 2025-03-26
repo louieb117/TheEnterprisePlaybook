@@ -1,0 +1,19 @@
+- name: Apply common configuration
+  hosts: backend
+  roles:
+    - common
+
+- name: Manage users
+  hosts: backend
+  roles:
+    - user_management
+
+# - name: Apply security configurations
+#   hosts: all
+#   roles:
+#     - security
+
+- name: Deploy application
+  hosts: backend
+  roles:
+    - application

@@ -1,0 +1,27 @@
+- name: Configure Backend API Server with Podman
+  hosts: backend
+  become: true
+  tasks:
+    - name: Update system packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install required packages
+      apt:
+        name:
+          - git
+          - podman
+          - podman-compose
+        state: present
+
+    - name: Clone backend repo
+      git:
+        repo: "https://github.com/louieb117/API-Server.git"
+        dest: "/opt/backend"
+        version: "main"
+
+    - name: Deploy backend with Podman Compose
+      command: podman-compose up -d
+      args:
+        chdir: /opt/backend

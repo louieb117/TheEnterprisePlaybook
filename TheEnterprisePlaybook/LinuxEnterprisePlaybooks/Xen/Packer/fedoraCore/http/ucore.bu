@@ -1,0 +1,72 @@
+variant: fcos
+version: 1.6.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9WZotpln9nsGAr7rSKVEahbuHsGZYbUaGb3PxAblH0QxZ4eKbRphTtIq+TnaDxNa91oQe1I551T6bCmQYxhNdiATtlqHYflAOr7pXP9ydPQVruvVhbPWUFZ4mhNucDNb4QtQf01/n/LE4ZWjxomfZjCZV2yAUEgmzLXfgO8BavsMJ1qfIzx2v2rVhArw/UjnFXCXZvmHwmLtvMle4oQu+2iqYxMQPALvPQVXsVWa6LYViku0VmOVfba3p3hv4jdXyeRsiPi8XXuYOy+Hq7aYY7yf15y/kSN9fRdjmdxocYUMwuTug/whUElGujAupTHiVvO0bk9L07Y0Z4X4Jjs/H lbellov@bluefin
+      password_hash: $y$j9T$VzyM0F3U0qKdCJi.WnDTW.$hCJlELjvYNvOsdk5t9jmYMq1yqmEas6OPfi/9KW55//
+    - name: devuser
+      groups:
+        - sudo
+        - wheel
+      password_hash: $y$j9T$meZYoCzcqfO7bMsuVRstg/$0HHR4tuZHQy4gUEwdq7/czW37OhHRYp41evbpoydWy2
+      ssh_authorized_keys: 
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfFSTSOCZI/TlWI37fCgnW0odMgJAcpufkF0dw6pLYVlU6dM8eBe6pmbqZsgTwXeSq8BhNKVN8hC8nnCLA/4j3Si8Mhy+vjhbIFYBWrgiWjQ88UknxrnwLITf+e2KRSP+mcRHRkYvi/IGwWe8fVhOvt9otVLFAGQSKxu4o5NLzA0iXm3mL0zqUW86QqSpMgUJyN9R//ScVAxX8NCXHaoNm6XBzaLX+6oUzpdC8dnQTpP/n9rrcgiWzomyDj9sQfq85b3SqS5hE0o77KWtSwJKQqJ+ElBAri6G8MBWItlc/mi2m6Z8cmHd6RmYajDJvGC7qmc0iylyDxWIi954w9Ut lbellov@bluefin
+storage:
+  directories:
+    - path: /etc/ucore-autorebase
+      mode: 0754
+systemd:
+  units:
+    - name: ucore-unsigned-autorebase.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=uCore autorebase to unsigned OCI and reboot
+        ConditionPathExists=!/etc/ucore-autorebase/unverified
+        ConditionPathExists=!/etc/ucore-autorebase/signed
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        StandardOutput=journal+console
+        ExecStart=/usr/bin/rpm-ostree rebase --bypass-driver ostree-unverified-registry:ghcr.io/ublue-os/ucore:stable
+        ExecStart=/usr/bin/touch /etc/ucore-autorebase/unverified
+        ExecStart=/usr/bin/systemctl disable ucore-unsigned-autorebase.service
+        ExecStart=/usr/bin/systemctl reboot
+        [Install]
+        WantedBy=multi-user.target
+    - name: ucore-signed-autorebase.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=uCore autorebase to signed OCI and reboot
+        ConditionPathExists=/etc/ucore-autorebase/unverified
+        ConditionPathExists=!/etc/ucore-autorebase/signed
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        StandardOutput=journal+console
+        ExecStart=/usr/bin/rpm-ostree rebase --bypass-driver ostree-image-signed:docker://ghcr.io/ublue-os/ucore:stable
+        ExecStart=/usr/bin/touch /etc/ucore-autorebase/signed
+        ExecStart=/usr/bin/systemctl disable ucore-signed-autorebase.service
+        ExecStart=/usr/bin/systemctl reboot
+        [Install]
+        WantedBy=multi-user.target
+    - name: install-xe-guest-utilities.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Install Xen guest utilities
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        StandardOutput=journal+console
+        ExecStart=/usr/bin/rpm-ostree install xe-guest-utilities-latest
+        ExecStart=/usr/bin/systemctl disable install-xe-guest-utilities.service
+        ExecStart=/usr/bin/systemctl reboot
+        [Install]
+        WantedBy=multi-user.target
