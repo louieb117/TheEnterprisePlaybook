@@ -1,0 +1,27 @@
+---
+- name: Set time zone
+  win_timezone:
+    timezone: "Pacific Standard Time"
+
+- name: Rename computer
+  win_hostname:
+    name: DC001
+  register: rename_result
+
+- name: Ensure NuGet package provider is installed
+  win_shell: |
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+  args:
+    executable: powershell.exe
+
+- name: Install NetworkingDsc module
+  win_psmodule:
+    name: NetworkingDsc
+    state: present
+    allow_clobber: yes
+
+
+- name: Reboot after rename
+  win_reboot:
+  when: rename_result.reboot_required

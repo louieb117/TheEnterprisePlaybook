@@ -1,0 +1,24 @@
+---
+- name: Install AD Domain Services
+  win_feature:
+    name: AD-Domain-Services
+    include_management_tools: yes
+    state: present
+
+- name: Promote server to Domain Controller
+  win_domain:
+    dns_domain_name: test.potentiamaxima.com
+    domain_admin_user: "Administrator"
+    domain_admin_password: "P@ssw0rd!"
+    domain_name: test.potentiamaxima.com
+    domain_netbios_name: TEST
+    safe_mode_admin_user: "Administrator"
+    domain_mode: Default
+    forest_mode: Default
+    safe_mode_password: "P@ssw0rd!"
+    state: domain_controller
+  register: domain_result
+
+- name: Reboot after domain promotion
+  win_reboot:
+  when: domain_result.reboot_required

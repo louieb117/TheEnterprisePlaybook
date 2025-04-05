@@ -1,0 +1,17 @@
+---
+- name: Create Organizational Unit
+  win_shell: |
+    if (-Not (Get-ADOrganizationalUnit -Filter "Name -eq 'ITDept'")) {
+      New-ADOrganizationalUnit -Name "ITDept" -Path "DC=test,DC=potentiamaxima,DC=com"
+    }
+
+- name: Create a domain user
+  win_domain_user:
+    name: jdoe
+    password: "P@ssword123"
+    firstname: John
+    surname: Doe
+    upn: jdoe@test.potentiamaxima.com
+    path: "OU=ITDept,DC=test,DC=potentiamaxima,DC=com"
+    state: present
+    password_never_expires: yes

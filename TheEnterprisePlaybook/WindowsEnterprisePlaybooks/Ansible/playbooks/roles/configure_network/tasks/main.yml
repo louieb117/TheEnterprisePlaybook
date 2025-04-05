@@ -1,0 +1,22 @@
+---
+- name: Set static IP
+  win_dsc:
+    resource_name: IPAddress
+    InterfaceAlias: "Ethernet"
+    AddressFamily: "IPv4"
+    IPAddress: ["192.168.5.59"]
+
+- name: Set default gateway
+  win_dsc:
+    resource_name: DefaultGatewayAddress
+    InterfaceAlias: "Ethernet"
+    AddressFamily: "IPv4"
+    Address: "192.168.5.1"
+
+- name: Set DNS server
+  win_dsc:
+    resource_name: DNSServerAddress
+    InterfaceAlias: "Ethernet"
+    AddressFamily: "IPv4"
+    Address: "192.168.5.1"
+

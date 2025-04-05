@@ -1,0 +1,10 @@
+---
+- name: Full Windows Server Configuration
+  hosts: windows
+  gather_facts: no
+
+  roles:
+    - setup_basics
+    - configure_network
+    - install_ad
+    - ad_config
